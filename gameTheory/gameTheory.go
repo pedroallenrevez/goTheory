@@ -4,26 +4,63 @@ import (
 	"fmt"
 )
 
-// ID unique identifier for building agents
-var ID = 0
+// pID unique identifier for building agents
+var pID = -1
+
+// aID unique identifier for building actions
+var aID = -1
+
+//__________________________________ACTION______________________________________
 
 // Action specification for an action
 type Action struct {
 	name string
+	id   int
 }
+
+// CreateAction creates an action with an unique identifier
+// this action lacks context
+func (a Action) CreateAction(name string) *Action {
+	id = aID + 1
+	new := Action{
+		name: name,
+		id:   id,
+	}
+	return &new
+}
+
+//__________________________________AGENT_______________________________________
 
 // Agent Specification for an agent
 type Agent struct {
-	Strategy   func() Action
+	Strat      Strategy
+	Actions    []Action
 	id         int
 	totalScore float64
 	//PD values
 	tParam, rParam, sParam, pParam float64
 }
 
-func (a *Agent) CreateAgent(actions []Action, strat Strategy, tVal, rVal, pVal, sVal float64) Agent {
+// Strategy A function to pick the action of all the available ones
+// can be a mixed or pure strategy, even Tit for Tat, which adds a little more
+// functionality
+type Strategy func() Action
 
-	ID++
+// CreateAgent factory method for dumping agents with unique identifier
+func (a Agent) CreateAgent(actions []Action, strat Strategy, tVal, rVal, pVal, sVal float64) *Agent {
+	id := pID + 1
+	new := Agent{
+		Strat:      strat,
+		Actions:    actions,
+		tParam:     tVal,
+		rParam:     rVal,
+		pParam:     pVal,
+		sParam:     sVal,
+		totalScore: 0,
+		id:         id,
+	}
+	return &new
+
 }
 
 // PickAction ????
@@ -38,6 +75,9 @@ type Game struct {
 	Actions []Action
 	Players []Agent
 	//only has a dictionary of dictionary of states
+
+	//TODO implement nmap with n players
+	//2 player implementation
 }
 
 type state struct {
