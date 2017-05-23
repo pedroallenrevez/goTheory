@@ -71,10 +71,16 @@ func (g *Game) CalculatePayoff(game *Game, p *agent.Agent, act *action.Action) {
 }
 
 // Solve returns payoff for each agent.Agent in game
-func (g Game) Solve(game *Game) float64 {
+func (g *Game) Solve() {
 	//add score to each participating agent.Agent
 	//for all agent.Agents - calculate payoff
-	return 0.0
+
+	//actual implementation will be much different
+	payoff := g.States[0][1].payoffs
+	g.Players[0].TotalScore += payoff[0]
+	g.Players[1].TotalScore += payoff[1]
+
+	//DO STUFF
 }
 
 // FindNash finds all NE present in the game
@@ -103,7 +109,7 @@ type PDInterface interface {
 }
 
 // CreatePDilemma creates a pd game with the specified parameters
-func (pd PrisonerDilemma) CreatePDilemma(actions []*action.Action, players []*agent.Agent, t, r, s, p float64) *Game {
+func (pd *PrisonerDilemma) CreatePDilemma(actions []*action.Action, players []*agent.Agent, t, r, s, p float64) *Game {
 	if len(players) > 2 {
 		panic("must be 2 players only")
 	}

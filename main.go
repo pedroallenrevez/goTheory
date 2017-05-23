@@ -1,7 +1,7 @@
 package main
 
 import (
-	//	"fmt"
+	"fmt"
 	"github.com/pedroallenrevez/goTheory/gameTheory"
 	"github.com/pedroallenrevez/goTheory/gameTheory/action"
 	"github.com/pedroallenrevez/goTheory/gameTheory/agent"
@@ -35,5 +35,8 @@ func main() {
 	//create game
 	pd := g.CreatePDilemma(actArray, players, 1.8, 1.0, 0.0, 0.0)
 	gameTheory.PrintGame(pd)
+	pd.Solve()
+	fmt.Println(p1.TotalScore)
+	fmt.Println(p2.TotalScore)
 	//g.LoadPrisonerDilemma(pd, 1.9, 1.0, 0.0, 0.0)
 }
