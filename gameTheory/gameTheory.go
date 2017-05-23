@@ -108,24 +108,26 @@ func (g *Game) CreateGame(actions []*Action, players []*Agent) *Game {
 
 	//init states with size of actions we want a.len x a.len
 
-	states := make([][]state, len(actions))
-	payoffs := make([]float64, len(players))
-	fmt.Println(len(actions), len(players))
-	fmt.Println(actions, players)
+	NIDstates := make([][]state, len(actions))
 
-	for val := range states {
-		fmt.Println(val)
+	for i := range NIDstates {
+		NIDstates[i] = make([]state, len(actions))
 	}
 
-	for i := 0; i < len(actions); i++ {
-		for j := 0; j < len(actions); j++ {
-			states[i][j].payoffs = payoffs
+	payoffs := make([]float64, len(players), len(players))
+	payoffs[0] = 0.0
+	payoffs[1] = 0.0
+
+	for i := 0; i < 2; i++ {
+		for j := 0; j < 2; j++ {
+			NIDstates[i][j].payoffs = payoffs
 		}
 	}
+
 	new := Game{
 		Actions: actions,
 		Players: players,
-		States:  states,
+		States:  NIDstates,
 	}
 	return &new
 }
@@ -205,7 +207,8 @@ func PrintGame(g *Game) {
 
 	for i := 0; i < 2; i++ {
 		for j := 0; j < 2; j++ {
-			fmt.Sprintf("%d,%d  %f, %f", i, j, g.States[i][j].payoffs[0], g.States[i][j].payoffs[1])
+			fmt.Print(i, j, ".....")
+			fmt.Println(g.States[i][j].payoffs[0], g.States[i][j].payoffs[1])
 		}
 	}
 }

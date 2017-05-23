@@ -31,9 +31,6 @@ func main() {
 	players[0] = p1
 	players[1] = p2
 
-	fmt.Println("b4 reating game")
-	fmt.Println(actArray)
-	fmt.Println(players)
 	pd := g.CreatePDilemma(actArray, players, 1.8, 1.0, 0.0, 0.0)
 	gameTheory.PrintGame(pd)
 }
