@@ -2,87 +2,16 @@ package gameTheory
 
 import (
 	"fmt"
-	//	"strconv"
+	"github.com/pedroallenrevez/goTheory/gameTheory/action"
+	"github.com/pedroallenrevez/goTheory/gameTheory/agent"
 )
-
-// pID unique identifier for building agents
-var pID = -1
-
-// aID unique identifier for building actions
-var aID = -1
-
-//__________________________________ACTION______________________________________
-
-// Action specification for an action
-type Action struct {
-	name string
-	id   int
-}
-
-// AInterface you can only create an action
-type AInterface interface {
-	CreateAction(string) *Action
-}
-
-// CreateAction creates an action with an unique identifier
-// this action lacks context
-func (a Action) CreateAction(name string) *Action {
-	aID++
-	new := Action{
-		name: name,
-		id:   aID,
-	}
-	return &new
-}
-
-//__________________________________AGENT_______________________________________
-
-// Agent Specification for an agent
-type Agent struct {
-	Strat      Strategy
-	Actions    []*Action
-	id         int
-	totalScore float64
-	//PD values
-}
-
-//AgInterface interface responsible for creating an agent
-type AgInterface interface {
-	CreateAgent([]*Action, Strategy) *Agent
-}
-
-// Strategy A function to pick the action of all the available ones
-// can be a mixed or pure strategy, even Tit for Tat, which adds a little more
-// functionality
-type Strategy func() *Action
-
-// CreateAgent factory method for dumping agents with unique identifier
-func (a Agent) CreateAgent(actions []*Action, strat Strategy /*, tVal, rVal, pVal, sVal float64*/) *Agent {
-	pID++
-	new := Agent{
-		Strat:   strat,
-		Actions: actions,
-		/*tParam:     tVal,
-		rParam:     rVal,
-		pParam:     pVal,
-		sParam:     sVal,*/
-		totalScore: 0,
-		id:         pID,
-	}
-	return &new
-
-}
-
-// PickAction ????
-func (a *Agent) PickAction() {
-}
 
 //__________________________________CORE________________________________________
 
 // Game structure for a normal n x n games
 type Game struct {
-	Actions []*Action
-	Players []*Agent
+	Actions []*action.Action
+	Players []*agent.Agent
 	//only has a dictionary of dictionary of states
 	//TODO implement nmap with n players
 	//2 player implementation
@@ -91,7 +20,7 @@ type Game struct {
 
 // GInterface interfface responsible for the game method available
 type GInterface interface {
-	CreateGame([]Action, []Agent) *Game
+	CreateGame([]action.Action, []agent.Agent) *Game
 	Solve(Game)
 }
 
@@ -100,13 +29,13 @@ type state struct {
 	payoffs [2]float64
 }
 
-// CreateGame creates a game with n actions, m players
-func (g *Game) CreateGame(actions []*Action, players []*Agent) *Game {
+// CreateGame creates a game with n action.Actions, m players
+func (g *Game) CreateGame(actions []*action.Action, players []*agent.Agent) *Game {
 	// maps of maps dictionaries
 	// 2x2 prisoners dilemma
 	// 1x1 or NxN
 
-	//init states with size of actions we want a.len x a.len
+	//init states with size of action.Actions we want a.len x a.len
 
 	NIDstates := make([][]state, len(actions))
 
@@ -134,17 +63,17 @@ func (g *Game) CreateGame(actions []*Action, players []*Agent) *Game {
 	return &new
 }
 
-// CalculatePayoff returns payoff for given game players and action
+// CalculatePayoff returns payoff for given game players and action.Action
 // it is not needed to compute all the values at the beggining, because the
-// choice of action is deterministic. We just calculate it when needed.
-func (g *Game) CalculatePayoff(game *Game, p *Agent, act *Action) {
+// choice of action.Action is deterministic. We just calculate it when needed.
+func (g *Game) CalculatePayoff(game *Game, p *agent.Agent, act *action.Action) {
 	//run q function
 }
 
-// Solve returns payoff for each agent in game
+// Solve returns payoff for each agent.Agent in game
 func (g Game) Solve(game *Game) float64 {
-	//add score to each participating agent
-	//for all agents - calculate payoff
+	//add score to each participating agent.Agent
+	//for all agent.Agents - calculate payoff
 	return 0.0
 }
 
@@ -169,17 +98,16 @@ type PrisonerDilemma struct {
 
 // PDInterface interface for the prisoner dilemma
 type PDInterface interface {
-	CreatePDilemma([]*Action, []*Agent, float64, float64, float64, float64) *Game
-	LoadPrisonerDilemma(*Game, float64, float64, float64, float64)
+	CreatePDilemma([]*action.Action, []*agent.Agent, float64, float64, float64, float64) *Game
+	//LoadPrisonerDilemma(*Game, float64, float64, float64, float64)
 }
 
 // CreatePDilemma creates a pd game with the specified parameters
-func (pd PrisonerDilemma) CreatePDilemma(actions []*Action, players []*Agent, t, r, s, p float64) *Game {
+func (pd PrisonerDilemma) CreatePDilemma(actions []*action.Action, players []*agent.Agent, t, r, s, p float64) *Game {
 	if len(players) > 2 {
 		panic("must be 2 players only")
 	}
 	newGame := pd.CreateGame(actions, players)
-	PrintGame(newGame)
 	var arr [2]float64
 	arr[0] = r
 	arr[1] = r
@@ -196,6 +124,7 @@ func (pd PrisonerDilemma) CreatePDilemma(actions []*Action, players []*Agent, t,
 	return newGame
 }
 
+/*
 // LoadPrisonerDilemma receive a game and assign the PD values to them
 // THIS ONLY WILL WORK FOR 2x2 GAMES
 func (pd *PrisonerDilemma) LoadPrisonerDilemma(game *Game, t, r, p, s float64) {
@@ -214,6 +143,7 @@ func (pd *PrisonerDilemma) LoadPrisonerDilemma(game *Game, t, r, p, s float64) {
 	pd.States[1][1].payoffs[1] = p
 
 }
+*/
 
 //_______________________________EXTRAS________________________________________
 
@@ -222,7 +152,7 @@ func PrintGame(g *Game) {
 
 	for i := 0; i < 2; i++ {
 		for j := 0; j < 2; j++ {
-			fmt.Print(i, j, ".....")
+			fmt.Print(i, j, "...")
 			fmt.Println(g.States[i][j].payoffs[0], g.States[i][j].payoffs[1])
 		}
 	}
