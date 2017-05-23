@@ -97,7 +97,7 @@ type GInterface interface {
 
 type state struct {
 	//payoffs are ordered according to player ID
-	payoffs []float64
+	payoffs [2]float64
 }
 
 // CreateGame creates a game with n actions, m players
@@ -114,7 +114,9 @@ func (g *Game) CreateGame(actions []*Action, players []*Agent) *Game {
 		NIDstates[i] = make([]state, len(actions))
 	}
 
-	payoffs := make([]float64, len(players), len(players))
+	//payoffs := make([2]float64, len(players))
+	var payoffs [2]float64
+
 	payoffs[0] = 0.0
 	payoffs[1] = 0.0
 
@@ -146,19 +148,6 @@ func (g Game) Solve(game *Game) float64 {
 	return 0.0
 }
 
-/*
-// LoadPrisonerDilemma receive a game and assign the PD values to them
-// THIS ONLY WILL WORK FOR 2x2 GAMES
-func (g *Game) LoadPrisonerDilemma(g Game) Game {
-	//check if 2x2
-	if g.Players.size > 2 {
-		panic("game not supposed not have more than 2 players")
-	}
-	//load params
-
-}
-*/
-
 // FindNash finds all NE present in the game
 // ret value?
 func (g *Game) FindNash(game Game) {
@@ -181,23 +170,49 @@ type PrisonerDilemma struct {
 // PDInterface interface for the prisoner dilemma
 type PDInterface interface {
 	CreatePDilemma([]*Action, []*Agent, float64, float64, float64, float64) *Game
+	LoadPrisonerDilemma(*Game, float64, float64, float64, float64)
 }
 
 // CreatePDilemma creates a pd game with the specified parameters
-func (pd *PrisonerDilemma) CreatePDilemma(actions []*Action, players []*Agent, t, r, s, p float64) *Game {
+func (pd PrisonerDilemma) CreatePDilemma(actions []*Action, players []*Agent, t, r, s, p float64) *Game {
 	if len(players) > 2 {
 		panic("must be 2 players only")
 	}
 	newGame := pd.CreateGame(actions, players)
-	newGame.States[0][0].payoffs[0] = r
-	newGame.States[0][0].payoffs[1] = r
-	newGame.States[0][1].payoffs[0] = s
-	newGame.States[0][1].payoffs[1] = t
-	newGame.States[1][0].payoffs[0] = t
-	newGame.States[1][0].payoffs[1] = s
-	newGame.States[1][1].payoffs[0] = p
-	newGame.States[1][1].payoffs[1] = p
+	PrintGame(newGame)
+	var arr [2]float64
+	arr[0] = r
+	arr[1] = r
+	newGame.States[0][0].payoffs = arr
+	arr[0] = s
+	arr[1] = t
+	newGame.States[0][1].payoffs = arr
+	arr[0] = t
+	arr[1] = s
+	newGame.States[1][0].payoffs = arr
+	arr[0] = p
+	arr[1] = p
+	newGame.States[1][1].payoffs = arr
 	return newGame
+}
+
+// LoadPrisonerDilemma receive a game and assign the PD values to them
+// THIS ONLY WILL WORK FOR 2x2 GAMES
+func (pd *PrisonerDilemma) LoadPrisonerDilemma(game *Game, t, r, p, s float64) {
+	//check if 2x2
+	if len(game.Players) > 2 {
+		panic("game not supposed not have more than 2 players")
+	}
+	//load params
+	pd.States[0][0].payoffs[0] = r
+	pd.States[0][0].payoffs[1] = r
+	pd.States[0][1].payoffs[0] = s
+	pd.States[0][1].payoffs[1] = t
+	pd.States[1][0].payoffs[0] = t
+	pd.States[1][0].payoffs[1] = s
+	pd.States[1][1].payoffs[0] = p
+	pd.States[1][1].payoffs[1] = p
+
 }
 
 //_______________________________EXTRAS________________________________________
