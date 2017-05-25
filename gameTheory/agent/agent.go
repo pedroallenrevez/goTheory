@@ -10,8 +10,10 @@ var pID = -1
 var mixed = func() *action.Action {
 	return nil
 }
-var pure = func() *action.Action {
-
+var alld = func() *action.Action {
+	return nil
+}
+var allc = func() *action.Action {
 	return nil
 }
 var tft = func() *action.Action {
