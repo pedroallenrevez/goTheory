@@ -32,6 +32,8 @@ type Agent struct {
 //AgInterface interface responsible for creating an agent
 type AgInterface interface {
 	CreateAgent([]*action.Action, Strategy) *Agent
+	CreateAgent2([]*action.Action) *Agent
+	Init([]*action.Action, Strategy)
 	Play() *action.Action
 }
 
@@ -55,6 +57,15 @@ func (a Agent) CreateAgent(actions []*action.Action, strat Strategy) *Agent {
 	}
 	return &new
 
+}
+
+// Init initializes agent
+func (a Agent) Init(actions []*action.Action, strat Strategy) {
+	pID++
+	a.ID = pID
+	a.TotalScore = 0
+	a.Actions = actions
+	a.Strat = strat
 }
 
 // Play just returns the assigned strategy function
