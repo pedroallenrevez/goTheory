@@ -1,15 +1,14 @@
 package mcts
 
 import (
-	"fmt"
-	"github.com/pedroallenrevez/goTheory/gameTheory/action"
+//"fmt"
 )
 
 // Node node structure for the MCTS. holds the state
 type Node struct {
-	CurrentState State
+	CurrentState WorldModel
 	Parent       Node
-	Action       action.Action // ? is it needed
+	Action       Action // ? is it needed
 	ChildNodes   []Node
 	Visits       float64
 	Reward       float64
@@ -18,7 +17,7 @@ type Node struct {
 }
 
 // CreateNode - initialize a node with a state, and a parent
-func (n *Node) CreateNode(state State, parent Node) *Node {
+func (n *Node) CreateNode(state WorldModel, parent Node) *Node {
 	nodeList := make([]Node)
 	new := Node{
 		CurrentState: state,
@@ -34,7 +33,7 @@ func (n *Node) CreateNode(state State, parent Node) *Node {
 }
 
 // AddChild - Create a child node from state, under the current node
-func (n *Node) AddChild(state State) {
+func (n *Node) AddChild(state WorldModel) {
 	child := CreateNode(state, n)
 	n.ChildNodes = append(n.ChildNodes, child)
 }
@@ -48,7 +47,7 @@ func (n *Node) Update(r Reward) {
 // FullyExpanded - if the number of children is equal to the n actions, its
 // fully expanded
 func (n Node) FullyExpanded() bool {
-	if len(n.ChildNodes) == len(n.State.Game.Actions) {
+	if len(n.ChildNodes) == len(n.CurrentState.Game.Actions) {
 		return true
 	}
 	return false

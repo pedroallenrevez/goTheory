@@ -1,13 +1,14 @@
 package mcts
 
 import (
-	"fmt"
-	"github.com/pedroallenrevez/goTheory/gameTheory"
-	"github.com/pedroallenrevez/goTheory/gameTheory/action"
-	"github.com/pedroallenrevez/goTheory/gameTheory/agent"
+	//"fmt"
 	"math"
+	"math/rand"
 	"time"
 )
+
+// Reward - abstraction for rewards
+type Reward float64
 
 // MCTS structure for the main algorithm - iterations, time etc.
 type MCTS struct {
@@ -19,22 +20,22 @@ type MCTS struct {
 	*/
 	BestFirstChild Node
 	InitialNode    Node
-	CurrentState   State
+	CurrentState   WorldModel
 	//best action sequence?????
 	//budget ??
 }
 
 // Interface Provides the interface for the MCTS algorithm. Run method and init
 type Interface interface {
-	Run(budget) action.Action
-	Init(State)
+	Run(Node) Action
+	Init(WorldModel)
 	CreateMCTS() *MCTS
 }
 
 //______________________________________________________________________________
 
 // CreateMCTS - provides factory method for new MCTS algorithm
-func (mcts *MCTS) CreateMCTS(state State) {
+func CreateMCTS(state WorldModel) *MCTS {
 	rand.Seed(time.Now().Unix())
 	new := MCTS{
 		C: 1.4,
@@ -44,27 +45,29 @@ func (mcts *MCTS) CreateMCTS(state State) {
 }
 
 // Init - initialize the MCTS with an initial world state
-func (mcts *MCTS) Init(state State) {
+func (mcts *MCTS) Init(state WorldModel) {
 
 }
 
 // Run - returns the best action chosen by exploitation or exploration
-func (mcts *MCTS) Run(root Node) action.Action {
+func (mcts *MCTS) Run(root Node) Action {
 	// while within budget
 	for i := 0; i < 100; i++ {
-		front := selection(root)
-		reward := playout(front.state)
-		backPropagate(front, reward)
+		front := mcts.selection(root)
+		reward := mcts.playout(front.state)
+		mcts.backPropagate(front, reward)
 	}
-	return bestChild(root)
+	return mcts.bestChild(root)
 }
 
 func (mcts *MCTS) selection(initialNode Node) Node {
+	var node Node
 	for !initialNode.State.IsTerminal() {
 		if !initialNode.FullyExpanded {
-			return expand(initialNode)
+			initialNode = mcts.expand(initialNode)
+			break
 		} else {
-			initialNode = bestUCTChild(initialNode)
+			initialNode = mcts.bestUCTChild(initialNode)
 		}
 	}
 	return initialNode
@@ -75,7 +78,7 @@ func (mcts *MCTS) expand(parent Node) {
 }
 
 //there is state, currentstate, futurestate
-func (mcts *MCTS) playout(state State) Reward {
+func (mcts *MCTS) playout(state WorldModel) Reward {
 	for !state.IsTerminal() {
 		//pick random action
 		//state = state with new actions
