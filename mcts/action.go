@@ -9,6 +9,8 @@ var aID = -1
 type Action struct {
 	Name string
 	ID   int
+	Xcor int
+	Ycor int
 }
 
 // AInterface you can only create an action
@@ -18,17 +20,21 @@ type AInterface interface {
 
 // CreateAction creates an action with an unique identifier
 // this action lacks context
-func CreateAction(name string) *Action {
+func CreateAction(name string, x, y int) *Action {
 	aID++
 	new := Action{
 		Name: name,
 		ID:   aID,
+		Xcor: x,
+		Ycor: y,
 	}
 	return &new
 }
 
 //ApplyEffects - applies action to worldmodel
-func (a Action) ApplyEffects(state WorldModel) {
+func (a Action) ApplyEffects(state *WorldModel) {
+	//TODO moveplayer according to xcor and ycor
+	MovePlayer(state.Map, state.SID, a.Xcor, a.Ycor)
 
 }
 

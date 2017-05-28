@@ -2,8 +2,6 @@ package gameTheory
 
 import (
 	"fmt"
-	"github.com/pedroallenrevez/goTheory/gameTheory/action"
-	"github.com/pedroallenrevez/goTheory/gameTheory/agent"
 )
 
 //__________________________________CORE________________________________________
