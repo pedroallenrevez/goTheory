@@ -3,11 +3,16 @@ package mcts
 import (
 	"fmt"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
-var global *GameManager
+var globalReward1 float64
+var globalReward2 float64
+
+var globalWorldMap *WorldMap
+var globalActions []*Action
+var globalSkaters []*Skater
+
 var sID = -1
 
 // Skater struct that embeds the agent behaviour
@@ -16,90 +21,74 @@ type Skater struct {
 	PosX      int
 	PosY      int
 	SID       int
+	Mcts      *MCTS
+}
+
+//SetMcts - set the search algorithm for the agent
+func (s *Skater) SetMcts(mcts *MCTS) {
+	s.Mcts = mcts
+}
+
+//SetPos - set the search algorithm for the agent
+func (s *Skater) SetPos(x, y int) {
+	s.PosX = x
+	s.PosY = y
+}
+
+// CreateSkater - initialize all the actions
+func (gman *GameManager) CreateSkater() {
+	/*
+		sID++
+		newSk8r := Skater{
+			Direction: gman.RandomAction(),
+			PosX:      rand.Intn(gman.Width - 1),
+			PosY:      rand.Intn(gman.Height - 1),
+			SID:       sID,
+		}
+
+		//add them to the gameManagerMap
+		return newSk8r
+	*/
+
 }
 
 // GameManager instance responsible for the running the game
 type GameManager struct {
-	Map             WorldMap
+	Map             *WorldMap
 	Speed           int //displacement - 1sq or 2sq
 	CollisionRadius int //1sq or 2sq not needed
-	RewardExec      float64
-	RewardNotExec   float64
-	Actions         []*Action
 }
 
 // GManInterface provides the accessible methods for the game manager
 type GManInterface interface {
 	Init(int, int, int, int, int, float64, float64)
-	MovePlayer(int, int, int, int)
-	PrintGame()
 	PrintSkaters()
+	PrintGame()
 	Update()
 }
 
 // Init create a sk8rboy game with the specified parameters
 func (gman *GameManager) Init(w, h int, n int, speed int, radius int, r1, r2 float64) {
-	global = gman
+	globalReward1 = r1
+	globalReward2 = r2
 	gman.Speed = speed
-	gman.RewardExec = r1
-	gman.RewardNotExec = r2
 	gman.CollisionRadius = radius
-	gman.Width = w
-	gman.Height = h
 	rand.Seed(time.Now().Unix())
-	//init map with size w,h
-	newMap := make([]*Cell, w*h) //access with [i*m + j]
-	for i := 0; i < w; i++ {
-		for j := 0; j < h; j++ {
-			newCell := &Cell{
-				X: i,
-				Y: j,
-			}
-			newMap[i*w+j] = newCell
-		}
-	}
-	gman.Map = newMap
-	/*
-		for i := 0; i < gman.Width; i++ {
-			for j := 0; j < gman.Height; j++ {
-				fmt.Println(gman.GetCell(i, j).X, gman.GetCell(i, j).Y)
-			}
-		}
-	*/
-	gman.CreateActions()
-	gman.InitAgents(n, gman.Actions)
+
+	//init actions
+	globalActions = gman.InitActions()
+	//Init agents
+	globalSkaters = gman.InitAgents(n, w, h)
+	//Init WorldMap
+	globalWorldMap = gman.InitWorldMap(w, h)
+	gman.Map = globalWorldMap
+	//init mcts
+	gman.InitMcts()
 
 }
 
-// InitAgents - initializes n agents
-func (gman *GameManager) InitAgents(n int, actions []*Action) {
-	//add sk8rs to array
-	skaters := make([]*Skater, n)
-	for i := 0; i < n; i++ {
-		newAgent := CreateSkater()
-		skaters[i] = newAgent
-	}
-	gman.Skaters = skaters
-}
-
-// CreateSkater - initialize all the actions
-func CreateSkater() *Skater {
-	sID++
-	newSk8r := &Skater{
-		Direction: global.Actions[rand.Intn(len(global.Actions))],
-		PosX:      rand.Intn(global.Width),
-		PosY:      rand.Intn(global.Height),
-		SID:       sID,
-	}
-
-	//add them to the gameManagerMap
-	global.GetCell(newSk8r.PosX, newSk8r.PosY).Skater = newSk8r
-	return newSk8r
-
-}
-
-// CreateActions - create a number of actions according to angle resolution
-func (gman *GameManager) CreateActions() {
+// InitActions - create a number of actions according to angle resolution
+func (gman *GameManager) InitActions() []*Action {
 	//do 8 angles
 	actions := make([]*Action, 8)
 	turn0 := CreateAction("0", 1, 0)
@@ -118,58 +107,139 @@ func (gman *GameManager) CreateActions() {
 	actions[6] = turn270
 	turn315 := CreateAction("315", 1, 1)
 	actions[7] = turn315
+	return actions
+}
 
-	gman.Actions = actions
+// InitAgents - initializes n agents
+func (gman *GameManager) InitAgents(n, w, h int) []*Skater {
+	//add sk8rs to array
+	skaters := make([]*Skater, 0)
+	for i := 0; i < n; i++ {
+		//build state
+		//build node
+		/*
+		 */
+		//create agent with mcts
+		sID++
+		posX := rand.Intn(w - 1)
+		posY := rand.Intn(h - 1)
+		for _, skater := range skaters {
+			if skater.PosX == posX {
+				posX = rand.Intn(w - 1)
+			}
+			if skater.PosY == posY {
+				posY = rand.Intn(h - 1)
+			}
+		}
+		newAgent := &Skater{
+			Direction: RandomAction(),
+			PosX:      posX,
+			PosY:      posY,
+			SID:       sID,
+		}
+		skaters = append(skaters, newAgent)
+	}
+
+	return skaters
+}
+
+// InitWorldMap - initializes n agents
+func (gman *GameManager) InitWorldMap(w, h int) *WorldMap {
+	newMap := make([]Cell, w*h) //access with [i*m + j]
+	for i := 0; i < w; i++ {
+		for j := 0; j < h; j++ {
+			var newCell Cell
+			newCell = Cell{
+				X: i,
+				Y: j,
+			}
+			newMap[i*w+j] = newCell
+		}
+	}
+	//worldmodel
+	newWorldMap := &WorldMap{
+		Map:     newMap,
+		Skaters: make(map[int]*Skater),
+		Width:   w,
+		Height:  h,
+	}
+	for _, skater := range globalSkaters {
+		//on add skater fill the map with sid
+		newWorldMap.AddSkater(skater)
+	}
+	return newWorldMap
 
 }
 
-// Update - updates the game, all the skaters, and plays all games
+// InitMcts - initializes n agents
+func (gman *GameManager) InitMcts() {
+	for _, skater := range globalWorldMap.Skaters {
+		newState := WorldModel{
+			SID:       skater.SID,
+			Fitness:   0,
+			TurnsLeft: 100,
+			Actions:   make([]*Action, 0),
+			Reward:    0,
+			Map:       *gman.Map,
+		}
+		root := &Node{
+			CurrentState:   newState,
+			Parent:         nil,
+			ChildNodes:     make([]*Node, 0),
+			Reward:         0,
+			UntriedActions: globalActions,
+		}
+		//Create Mcts
+		newMCTS := &MCTS{
+			C:             1.4,
+			CurrentState:  newState,
+			Root:          root,
+			ExpandedNodes: make([]*Node, 0),
+		}
+		skater.SetMcts(newMCTS)
+	}
+}
+
+// Update - updates the game, all the skaters
 func (gman *GameManager) Update() {
 	//update all sk8rs one by one
-	for _, sk8r := range gman.Skaters {
+	for _, sk8r := range globalWorldMap.Skaters {
 		//run mcts
-		nextAction := gman.Actions[rand.Intn(len(gman.Actions))]
+		//nextAction := gman.RandomAction()
+		//go routine and wait for model on channel at end of update?
+		nextAction := sk8r.Mcts.Run()
 		sk8r.Direction = nextAction
+		//failsafe in case there is not action?
+		globalWorldMap.MovePlayer(sk8r.SID, nextAction)
+	}
 
-		gman.Map.MovePlayer(sk8r.SID, nextAction)
+	for _, sk8r := range globalWorldMap.Skaters {
+		fmt.Println("updated maps")
+		sk8r.Mcts.UpdateExpandedMaps(*globalWorldMap)
+		sk8r.Mcts.Reset()
 	}
 }
 
 //______________________________________________________________________________
 
-//CopyMap - creates a copy of the current world map for the worldModel
-func (gman *GameManager) CopyMap() WorldMap {
-	return gman.Map
+// RandomAction - returns a random action
+func RandomAction() *Action {
+	return globalActions[rand.Intn(len(globalActions))]
 }
 
-// PrintGame - prints current state of the board
+// PrintGameMan - calls game manager map method for printing
+func PrintGameMan(gman *GameManager) {
+	gman.PrintGame()
+	gman.PrintSkaters()
+}
+
+// PrintGame - calls game manager map method for printing
 func (gman *GameManager) PrintGame() {
-	//map
-	for i := 0; i < gman.Width; i++ {
-		for j := 0; j < gman.Height; j++ {
-			cell := gman.GetCell(i, j)
-			if cell.Skater != nil {
-				fmt.Print(" " + strconv.Itoa(cell.Skater.ID) + " ")
-				continue
-			} else {
-				fmt.Print(" _ ")
-			}
-
-		}
-		fmt.Println()
-	}
+	gman.Map.PrintGame()
 }
 
-// PrintSkaters - prints all skater positions
+// PrintSkaters - prints all skaters
 func (gman *GameManager) PrintSkaters() {
-	for _, skater := range gman.Skaters {
-		fmt.Print(" x: ")
-		fmt.Print(skater.PosX)
-		fmt.Print(" y: ")
-		fmt.Print(skater.PosY)
-		fmt.Print(" direction: ")
-		fmt.Print(skater.Direction.Name)
-		fmt.Println()
-	}
-
+	fmt.Print()
+	gman.Map.PrintSkaters()
 }

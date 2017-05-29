@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	/*"github.com/pedroallenrevez/goTheory/gameTheory"*/
 	"github.com/pedroallenrevez/goTheory/mcts"
 )
@@ -48,9 +47,7 @@ func main() {
 
 	NumTurns := 100
 	for x := 0; x < NumTurns; x++ {
-		gman.PrintGame()
-		gman.PrintSkaters()
+		//gman.PrintSkaters()
 		gman.Update()
-		fmt.Println(x)
 	}
 }

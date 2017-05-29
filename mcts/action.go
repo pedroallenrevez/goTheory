@@ -31,27 +31,15 @@ func CreateAction(name string, x, y int) *Action {
 	return &new
 }
 
-//ApplyEffects - applies action to worldmodel
-func (a Action) ApplyEffects(state *WorldModel) {
-	//TODO moveplayer according to xcor and ycor
-	MovePlayer(state.Map, state.SID, a.Xcor, a.Ycor)
-
-}
-
-//______________________________________________________________________________
-
-/*
-// GetAngles function responsible for creating angle actions
-func (a Action) GetAngles(k int) []*Action {
-	newActions := make([]*Action)
-	turn0 := func(gman *GameManager) {
-		gman.MovePlayer()
+//ApplyEffects - applies action to worldmodel, generates a child with reward
+func (a Action) ApplyEffects(state WorldModel) WorldModel {
+	var reward float64
+	if state.Map.IsExecutable(state.SID, &a) {
+		reward = globalReward1
+	} else {
+		reward = globalReward2
 	}
-	zero := ActInt.CreateAction("0", turnzero)
-
-	turn45 := func(gman *GameManager) {
-		gman.MovePlayer()
-	}
-	return newActions
+	newState := state.GenerateChild(reward, &a)
+	newState.Map.MovePlayer(state.SID, &a)
+	return newState
 }
-*/
