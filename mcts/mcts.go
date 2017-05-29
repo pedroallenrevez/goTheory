@@ -131,8 +131,7 @@ func (mcts *MCTS) bestChild(node *Node, experimental float64) *Node {
 		exploitation := child.Reward / float64(child.Visits)
 		exploration := math.Sqrt(math.Log(2*child.Visits) / float64(child.Visits))
 		score := exploitation + exploration + experimental
-		fmt.Println(score)
-		child.PrintNode()
+
 		if score == bestScore {
 			bestChildren = append(bestChildren, child)
 		}
@@ -147,6 +146,7 @@ func (mcts *MCTS) bestChild(node *Node, experimental float64) *Node {
 	if len(bestChildren) == 0 {
 		panic("no best children ???")
 	}
+	bestChild.PrintNode()
 	//return bestChildren[rand.Intn(len(bestChildren))]
 	return bestChild
 
